@@ -7,6 +7,7 @@ import com.telegram.response.BookListResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.client.RestTemplate;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 import org.telegram.telegrambots.meta.api.methods.commands.SetMyCommands;
@@ -53,6 +54,7 @@ public class TelegramBot extends TelegramLongPollingBot implements BotCommands {
                 case "/start" -> startBot(chatId, memberName);
                 case "/help" -> sendHelpText(chatId);
                 case "/allbooks" -> getAllBooks(chatId);
+                //case "/searchbookbyname" -> getBookByName(chatId);
                 default -> log.info("Unexpected message");
             }
         }
@@ -87,6 +89,18 @@ public class TelegramBot extends TelegramLongPollingBot implements BotCommands {
         } catch (TelegramApiException e) {
             log.error(e.getMessage());
         }
+    }
+
+    private void getBookByName(long chatId, String title) {
+        SendMessage message = new SendMessage();
+        message.setChatId(chatId);
+        message.setText("Введите название книги");
+        ResponseEntity<BookListResponse> responseEntity = new RestTemplate().getForEntity(
+                "http://localhost:1000/api/v1/book/" + title, BookListResponse.class
+        );
+        System.out.println(responseEntity.getBody().getData());
+        message.setText("Ищем книги.....");
+        message.setText(responseEntity.getBody().getData().toString().replaceAll("^\\[|\\]$", ""));
     }
 
     private void sendHelpText(Long chatId) {
