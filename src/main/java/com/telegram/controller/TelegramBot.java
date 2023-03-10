@@ -54,7 +54,7 @@ public class TelegramBot extends TelegramLongPollingBot implements BotCommands {
                 case "/start" -> startBot(chatId, memberName);
                 case "/help" -> sendHelpText(chatId);
                 case "/allbooks" -> getAllBooks(chatId);
-                //case "/searchbookbyname" -> getBookByName(chatId);
+                //case "/searchbookbyname" -> getBookByName(chatId, );
                 default -> log.info("Unexpected message");
             }
         }
@@ -101,6 +101,13 @@ public class TelegramBot extends TelegramLongPollingBot implements BotCommands {
         System.out.println(responseEntity.getBody().getData());
         message.setText("Ищем книги.....");
         message.setText(responseEntity.getBody().getData().toString().replaceAll("^\\[|\\]$", ""));
+
+        try {
+            execute(message);
+            log.info("Reply sent");
+        } catch (TelegramApiException e) {
+            log.error(e.getMessage());
+        }
     }
 
     private void sendHelpText(Long chatId) {
