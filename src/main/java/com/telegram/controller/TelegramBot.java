@@ -50,12 +50,28 @@ public class TelegramBot extends TelegramLongPollingBot implements BotCommands {
             long chatId = update.getMessage().getChatId();
             String memberName = update.getMessage().getFrom().getFirstName();
 
-            switch (messageText) {
+
+            /*switch (messageText) {
                 case "/start" -> startBot(chatId, memberName);
                 case "/help" -> sendHelpText(chatId);
                 case "/allbooks" -> getAllBooks(chatId);
-                //case "/searchbookbyname" -> getBookByName(chatId, );
+                case "/searchbookbyname" -> getBookByName(chatId, query);
                 default -> log.info("Unexpected message");
+            }*/
+            switch (messageText) {
+                case "/start":
+                    startBot(chatId, memberName);
+                case "/help":
+                    sendHelpText(chatId);
+                case "/allbooks":
+                    getAllBooks(chatId);
+                case "/searchbookbyname": {
+                    String[] array = messageText.split("/");
+                    String query = array[array.length - 1];
+                    getBookByName(chatId, query);
+                }
+                default:
+                    log.info("Unexpected message");
             }
         }
     }
@@ -91,14 +107,15 @@ public class TelegramBot extends TelegramLongPollingBot implements BotCommands {
         }
     }
 
-    private void getBookByName(long chatId, String title) {
+    private void getBookByName(long chatId, String query) {
         SendMessage message = new SendMessage();
         message.setChatId(chatId);
         message.setText("Введите название книги");
+        System.out.println(query);
         ResponseEntity<BookListResponse> responseEntity = new RestTemplate().getForEntity(
-                "http://localhost:1000/api/v1/book/" + title, BookListResponse.class
+                "http://localhost:1000/api/v1/book/find/?title=" + query, BookListResponse.class
         );
-        System.out.println(responseEntity.getBody().getData());
+        System.out.println(responseEntity.getBody().getData().toString());
         message.setText("Ищем книги.....");
         message.setText(responseEntity.getBody().getData().toString().replaceAll("^\\[|\\]$", ""));
 
